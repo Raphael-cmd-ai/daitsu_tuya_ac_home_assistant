@@ -1,0 +1,42 @@
+# Beispiel-Dashboard-Karte für Home Assistant (Lovelace YAML)
+# Einfach im Dashboard -> Karte hinzufügen -> Manuell einfügen
+# (Entitäts-IDs ggf. an den Namen deiner Klima anpassen, z. B. daitsu_artic_plus)
+
+type: vertical-stack
+cards:
+  - type: thermostat
+    entity: climate.daitsu_artic_plus
+    features:
+      - type: climate-hvac-modes
+        hvac_modes:
+          - "off"
+          - auto
+          - cool
+          - dry
+          - fan_only
+          - heat
+      - type: climate-fan-modes
+        style: dropdown
+  - type: entities
+    title: Lamellen & Optionen
+    show_header_toggle: false
+    entities:
+      - entity: select.daitsu_artic_plus_lamelle_vertikal
+      - entity: select.daitsu_artic_plus_lamelle_horizontal
+      - entity: switch.daitsu_artic_plus_display_licht
+      - entity: switch.daitsu_artic_plus_piepton
+      - entity: switch.daitsu_artic_plus_eco_modus
+      - entity: switch.daitsu_artic_plus_ai_eco
+      - entity: switch.daitsu_artic_plus_8_c_frostschutz
+  - type: history-graph
+    title: Live-Telemetrie (Temperatur & Inverter)
+    hours_to_show: 6
+    entities:
+      - entity: sensor.daitsu_artic_plus_raumtemperatur
+        name: Raum (°C)
+      - entity: sensor.daitsu_artic_plus_aussentemperatur
+        name: Außen (°C)
+      - entity: sensor.daitsu_artic_plus_kompressor_frequenz_ist
+        name: Kompressor (Hz)
+      - entity: sensor.daitsu_artic_plus_aussenlufter_drehzahl
+        name: Außenlüfter (U/min)

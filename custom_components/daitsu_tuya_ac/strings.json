@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Daitsu / TCL Tuya Cloud verbinden",
+        "description": "Trage deine Zugangsdaten aus dem Tuya IoT Development Portal ein (IoT Core muss aktiv sein).",
+        "data": {
+          "access_id": "Access ID (Client ID)",
+          "access_secret": "Access Secret",
+          "region": "Endpoint-Region",
+          "user_id": "User-ID / UID (optional)",
+          "poll_interval": "Abfrage-Intervall (Sekunden)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur Tuya Cloud fehlgeschlagen.",
+      "invalid_auth": "Ungültige Zugangsdaten oder fehlende IoT-Core-Berechtigung (1004 / 1106).",
+      "no_devices": "Keine Geräte im verknüpften Tuya-Projekt gefunden."
+    },
+    "abort": {
+      "already_configured": "Dieses Tuya-Projekt ist bereits eingerichtet."
+    }
+  }
+}

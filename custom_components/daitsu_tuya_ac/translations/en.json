@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Daitsu / TCL Tuya Cloud",
+        "description": "Enter your credentials from the Tuya IoT Development Portal (IoT Core must be active).",
+        "data": {
+          "access_id": "Access ID (Client ID)",
+          "access_secret": "Access Secret",
+          "region": "Endpoint Region",
+          "user_id": "User ID / UID (optional)",
+          "poll_interval": "Polling interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Tuya Cloud.",
+      "invalid_auth": "Invalid credentials or missing IoT Core permission (1004 / 1106).",
+      "no_devices": "No devices found in the linked Tuya project."
+    },
+    "abort": {
+      "already_configured": "This Tuya project is already configured."
+    }
+  }
+}
