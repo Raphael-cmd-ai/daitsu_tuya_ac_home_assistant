@@ -1,0 +1,10 @@
+{
+  "domain": "daitsu_tuya_ac",
+  "name": "Daitsu / TCL Tuya Klimaanlage",
+  "codeowners": ["@Raphael-cmd-ai"],
+  "config_flow": true,
+  "documentation": "https://github.com/Raphael-cmd-ai/daitsu_tuya_ac_home_assistant",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "1.0.0"
+}
