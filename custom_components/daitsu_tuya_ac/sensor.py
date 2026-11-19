@@ -52,6 +52,16 @@ def _format_electricity_kwh(raw: Any) -> float | None:
         return None
 
 
+def _normalize_outdoor_temp(raw: Any) -> float | None:
+    """Daitsu/TCL 'ure' outdoor temperature always uses scale 2 (hundredths of °C)."""
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        return round(float(raw) / 100.0, 1)
+    except (TypeError, ValueError):
+        return None
+
+
 def _to_int(raw: Any) -> int | None:
     if raw is None or isinstance(raw, bool):
         return None
@@ -78,7 +88,7 @@ SENSOR_SPECS: list[DaitsuSensorSpec] = [
         unit=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=normalize_temp,
+        value_fn=_normalize_outdoor_temp,
     ),
     DaitsuSensorSpec(
         dp_code="compressor_frequency",
