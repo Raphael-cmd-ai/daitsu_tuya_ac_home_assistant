@@ -60,26 +60,27 @@ def _normalize_outdoor_temp(status: dict[str, Any]) -> float | None:
 
 
 def _format_electricity_kwh(status: dict[str, Any]) -> float | None:
+    """Daitsu/TCL 'electricity' uses scale 2 (0.01 kWh per unit, e.g. 3 = 0.03 kWh)."""
     if not status.get("switch", False):
         return 0.0
     raw = status.get("electricity")
     if raw is None or isinstance(raw, bool):
         return None
     try:
-        return round(float(raw) / 1000.0, 3)
+        return round(float(raw) / 100.0, 2)
     except (TypeError, ValueError):
         return None
 
 
 def _estimate_power_watts(status: dict[str, Any]) -> int | None:
-    """Calculate live average power (W) from electricity (Wh) over virtual_period (s)."""
+    """Calculate live average power (W) from electricity (0.01 kWh = 10 Wh) over virtual_period (s)."""
     if not status.get("switch", False):
         return 0
-    raw_wh = status.get("electricity")
-    if raw_wh is None or isinstance(raw_wh, bool):
+    raw = status.get("electricity")
+    if raw is None or isinstance(raw, bool):
         return None
     try:
-        wh = float(raw_wh)
+        wh = float(raw) * 10.0
         period_s = float(status.get("virtual_period") or 120.0)
         if period_s <= 0:
             period_s = 120.0
