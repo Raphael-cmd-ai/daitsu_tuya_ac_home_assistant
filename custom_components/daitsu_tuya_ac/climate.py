@@ -46,7 +46,7 @@ class DaitsuTuyaClimate(DaitsuTuyaEntity, ClimateEntity):
     """Representation of a Daitsu / TCL Tuya Air Conditioner."""
 
     _attr_name = None
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
     _attr_hvac_modes = [
         HVACMode.OFF,
@@ -79,11 +79,11 @@ class DaitsuTuyaClimate(DaitsuTuyaEntity, ClimateEntity):
         return normalize_temp(self._status.get("upper_tem_limit")) or 31.0
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         return normalize_temp(self._status.get("temp_current"))
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         return normalize_temp(self._status.get("temp_set"))
 
     @property
