@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import json
 import logging
 from typing import Any
 
@@ -88,6 +89,18 @@ class TuyaSharingApi:
             token_listener,
         )
         manager.update_device_cache()
+        for dev_id, dev in (manager.device_map or {}).items():
+            fn_map = {
+                k: getattr(v, "values", "")
+                for k, v in (getattr(dev, "function", None) or {}).items()
+            }
+            _LOGGER.warning(
+                "SmartLife device %s (%s) | functions=%s | status=%s",
+                getattr(dev, "name", dev_id),
+                dev_id,
+                fn_map,
+                getattr(dev, "status", {}),
+            )
         manager.add_device_listener(_HADeviceListener(self._handle_mqtt_push))
         try:
             manager.refresh_mq()
@@ -128,13 +141,75 @@ class TuyaSharingApi:
             manager.update_device_cache()
         return self._serialize_device_map(manager)
 
+    def _adapt_value_to_function_spec(
+        self, manager: Manager, device_id: str, code: str, value: Any
+    ) -> Any:
+        """Auto-adapt enum values if SmartLife exposes text enums instead of 0..7 / 0..4."""
+        dev = (manager.device_map or {}).get(device_id)
+        if dev is None:
+            return value
+        fn = (getattr(dev, "function", None) or {}).get(code)
+        if fn is None:
+            return value
+        try:
+            spec = json.loads(getattr(fn, "values", "{}") or "{}")
+        except (TypeError, ValueError):
+            return value
+        allowed = spec.get("range")
+        if not isinstance(allowed, list) or not allowed:
+            return value
+        val_str = str(value)
+        if val_str in allowed:
+            return val_str
+
+        # Map numeric Daitsu mode codes -> SmartLife text enum if required
+        if code == "mode":
+            candidates = {
+                "0": ["auto"],
+                "1": ["cold", "cool"],
+                "2": ["wet", "dry"],
+                "3": ["wind", "fan"],
+                "4": ["heat", "hot"],
+            }.get(val_str, [])
+            for c in candidates:
+                if c in allowed:
+                    return c
+
+        # Map numeric Daitsu fan codes -> SmartLife text enum if required
+        if code == "fan_speed_enum":
+            candidates = {
+                "0": ["auto"],
+                "1": ["mute", "quiet", "low"],
+                "2": ["low"],
+                "3": ["low", "mid_low", "mid"],
+                "4": ["mid", "middle", "medium"],
+                "5": ["mid_high", "mid", "high"],
+                "6": ["high"],
+                "7": ["strong", "turbo", "high"],
+            }.get(val_str, [])
+            for c in candidates:
+                if c in allowed:
+                    return c
+
+        return value
+
     def _send_sync(self, device_id: str, code: str, value: Any) -> None:
         manager = self._ensure_manager_sync()
-        resp = manager.send_commands(device_id, [{"code": code, "value": value}])
+        adapted_value = self._adapt_value_to_function_spec(
+            manager, device_id, code, value
+        )
+        _LOGGER.warning(
+            "SmartLife send_commands %s: %s=%r (adapted=%r)",
+            device_id,
+            code,
+            value,
+            adapted_value,
+        )
+        resp = manager.send_commands(device_id, [{"code": code, "value": adapted_value}])
         if isinstance(resp, dict) and resp.get("success") is False:
             raise TuyaApiError(
                 resp.get("code"),
-                resp.get("msg", f"Befehl {code}={value} fehlgeschlagen."),
+                resp.get("msg", f"Befehl {code}={adapted_value} fehlgeschlagen."),
             )
 
     async def async_get_devices(self) -> list[dict[str, Any]]:
