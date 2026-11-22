@@ -3,18 +3,30 @@
     "step": {
       "user": {
         "title": "Verbindungsart wählen",
-        "description": "Wähle zwischen 100 % lokaler WLAN-Steuerung (ohne Tuya Cloud & ohne Limit) oder Tuya Open Cloud API.",
+        "description": "Empfohlen: SmartLife QR-Code (kein Developer-Limit, kein IoT-Core-Abo, Echtzeit-MQTT-Push).",
         "menu_options": {
-          "local": "Lokal über WLAN (Tuya v3.5 / v3.4 / v3.3 – 0 Cloud-Calls)",
-          "cloud": "Tuya Open Cloud API (90s Intervall)"
+          "smartlife": "SmartLife QR-Code (Empfohlen – kein Limit & Echtzeit-Push)",
+          "local": "Lokal über WLAN (Tuya v3.5 / v3.4 / v3.3)",
+          "cloud": "Tuya Open Cloud Developer API (90s Intervall)"
         }
+      },
+      "smartlife": {
+        "title": "SmartLife Benutzercode eingeben",
+        "description": "Öffne die SmartLife-App → Profil → Einstellungen (Zahnrad) → Konto und Sicherheit → Benutzercode.",
+        "data": {
+          "user_code": "SmartLife Benutzercode"
+        }
+      },
+      "smartlife_scan": {
+        "title": "QR-Code mit SmartLife scannen",
+        "description": "Scanne diesen QR-Code in der SmartLife-App (oben rechts auf das Scanner-Symbol), bestätige die Anmeldung und klicke dann unten auf Absenden:\n\n![QR Code]({qr_code})"
       },
       "local": {
         "title": "Lokale WLAN-Verbindung (ohne Cloud)",
-        "description": "Direkte Steuerung über Port 6668 im eigenen WLAN (funktioniert auch ohne Internet und ohne Tuya-Abo).",
+        "description": "Direkte Steuerung über Port 6668 im eigenen WLAN.",
         "data": {
           "device_name": "Gerätename",
-          "host": "IP-Adresse im WLAN (z. B. 192.168.1.50)",
+          "host": "IP-Adresse im WLAN (z. B. 192.168.1.15)",
           "device_id": "Device ID",
           "local_key": "Local Key (16 Zeichen)",
           "protocol_version": "Tuya Protokollversion",
@@ -35,12 +47,14 @@
     },
     "error": {
       "cannot_connect": "Verbindung zur Tuya Cloud fehlgeschlagen.",
-      "local_connect_failed": "Lokale Verbindung fehlgeschlagen. Prüfe IP-Adresse, Device ID, Local Key und ob die SmartLife-App gerade geschlossen ist (Tuya erlaubt nur eine aktive lokale Verbindung).",
+      "invalid_user_code": "Ungültiger Benutzercode. Bitte prüfe den Code in der SmartLife-App unter Konto & Sicherheit.",
+      "qr_not_scanned": "QR-Code wurde noch nicht in der SmartLife-App bestätigt. Bitte erst scannen & bestätigen, dann erneut auf Absenden klicken.",
+      "local_connect_failed": "Lokale Verbindung fehlgeschlagen (Port 6668 nicht erreichbar).",
       "invalid_auth": "Ungültige Zugangsdaten oder fehlende IoT-Core-Berechtigung (1004 / 1106).",
-      "no_devices": "Keine Geräte im verknüpften Tuya-Projekt gefunden."
+      "no_devices": "Keine Geräte im verknüpften Konto gefunden."
     },
     "abort": {
-      "already_configured": "Dieses Gerät / Tuya-Projekt ist bereits eingerichtet."
+      "already_configured": "Dieses Konto / Gerät ist bereits eingerichtet."
     }
   }
 }

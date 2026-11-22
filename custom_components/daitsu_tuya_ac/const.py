@@ -7,8 +7,17 @@ from homeassistant.components.climate import HVACMode
 DOMAIN = "daitsu_tuya_ac"
 
 CONF_CONNECTION_MODE = "connection_mode"
+MODE_SMARTLIFE = "smartlife"
 MODE_LOCAL = "local"
 MODE_CLOUD = "cloud"
+
+# SmartLife QR-Code Device Sharing constants (no Developer API quota)
+TUYA_SHARING_CLIENT_ID = "HA_3y9q4ak7g4ephrvke"
+TUYA_SHARING_SCHEMA = "haauthorize"
+CONF_USER_CODE = "user_code"
+CONF_TERMINAL_ID = "terminal_id"
+CONF_ENDPOINT = "endpoint"
+CONF_TOKEN_INFO = "token_info"
 
 CONF_ACCESS_ID = "access_id"
 CONF_ACCESS_SECRET = "access_secret"

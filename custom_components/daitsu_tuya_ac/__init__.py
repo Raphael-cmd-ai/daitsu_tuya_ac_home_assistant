@@ -1,4 +1,4 @@
-"""The Daitsu / TCL Tuya AC integration (Local v3.5 & Cloud)."""
+"""The Daitsu / TCL Tuya AC integration (SmartLife QR-Push, Local v3.5 & Cloud)."""
 
 from __future__ import annotations
 
@@ -24,10 +24,12 @@ from .const import (
     DOMAIN,
     MODE_CLOUD,
     MODE_LOCAL,
+    MODE_SMARTLIFE,
 )
 from .coordinator import DaitsuTuyaCoordinator
 from .tuya_api import TuyaCloudApi
 from .tuya_local_api import TuyaLocalApi
+from .tuya_sharing_api import TuyaSharingApi
 
 PLATFORMS: list[Platform] = [
     Platform.CLIMATE,
@@ -41,7 +43,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Daitsu / TCL Tuya AC from a config entry."""
     mode = entry.data.get(CONF_CONNECTION_MODE, MODE_CLOUD)
 
-    if mode == MODE_LOCAL:
+    if mode == MODE_SMARTLIFE:
+        api = TuyaSharingApi(hass=hass, entry=entry)
+        # Real-time MQTT Push handles instant updates; gentle 5-min fallback sync
+        coordinator = DaitsuTuyaCoordinator(hass, api, poll_interval_seconds=300)
+        api.set_push_callback(coordinator.async_set_updated_data)
+    elif mode == MODE_LOCAL:
         api = TuyaLocalApi(
             hass=hass,
             device_name=entry.data.get(CONF_DEVICE_NAME, "Daitsu Artic Plus"),
@@ -53,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         poll_interval = int(
             entry.data.get(CONF_POLL_INTERVAL, DEFAULT_LOCAL_POLL_INTERVAL)
         )
+        coordinator = DaitsuTuyaCoordinator(hass, api, poll_interval)
     else:
         session = async_get_clientsession(hass)
         api = TuyaCloudApi(
@@ -63,8 +71,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             user_id=entry.data.get(CONF_USER_ID, ""),
         )
         poll_interval = int(entry.data.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL))
+        coordinator = DaitsuTuyaCoordinator(hass, api, poll_interval)
 
-    coordinator = DaitsuTuyaCoordinator(hass, api, poll_interval)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
@@ -76,5 +84,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        coordinator: DaitsuTuyaCoordinator | None = hass.data[DOMAIN].pop(
+            entry.entry_id, None
+        )
+        if coordinator and isinstance(coordinator.api, TuyaSharingApi):
+            await coordinator.api.async_stop()
     return unload_ok
