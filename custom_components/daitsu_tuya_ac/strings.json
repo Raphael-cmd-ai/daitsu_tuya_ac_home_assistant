@@ -2,8 +2,28 @@
   "config": {
     "step": {
       "user": {
+        "title": "Verbindungsart wählen",
+        "description": "Wähle zwischen 100 % lokaler WLAN-Steuerung (ohne Tuya Cloud & ohne Limit) oder Tuya Open Cloud API.",
+        "menu_options": {
+          "local": "Lokal über WLAN (Tuya v3.5 / v3.4 / v3.3 – 0 Cloud-Calls)",
+          "cloud": "Tuya Open Cloud API (90s Intervall)"
+        }
+      },
+      "local": {
+        "title": "Lokale WLAN-Verbindung (ohne Cloud)",
+        "description": "Direkte Steuerung über Port 6668 im eigenen WLAN (funktioniert auch ohne Internet und ohne Tuya-Abo).",
+        "data": {
+          "device_name": "Gerätename",
+          "host": "IP-Adresse im WLAN (z. B. 192.168.1.50)",
+          "device_id": "Device ID",
+          "local_key": "Local Key (16 Zeichen)",
+          "protocol_version": "Tuya Protokollversion",
+          "poll_interval": "Abfrage-Intervall (Sekunden)"
+        }
+      },
+      "cloud": {
         "title": "Daitsu / TCL Tuya Cloud verbinden",
-        "description": "Trage deine Zugangsdaten aus dem Tuya IoT Development Portal ein (IoT Core muss aktiv sein).",
+        "description": "Trage deine Zugangsdaten aus dem Tuya IoT Development Portal ein (empfohlen: mind. 90 s Intervall wegen Tuya-Monatslimit).",
         "data": {
           "access_id": "Access ID (Client ID)",
           "access_secret": "Access Secret",
@@ -15,11 +35,12 @@
     },
     "error": {
       "cannot_connect": "Verbindung zur Tuya Cloud fehlgeschlagen.",
+      "local_connect_failed": "Lokale Verbindung fehlgeschlagen. Prüfe IP-Adresse, Device ID, Local Key und ob die SmartLife-App gerade geschlossen ist (Tuya erlaubt nur eine aktive lokale Verbindung).",
       "invalid_auth": "Ungültige Zugangsdaten oder fehlende IoT-Core-Berechtigung (1004 / 1106).",
       "no_devices": "Keine Geräte im verknüpften Tuya-Projekt gefunden."
     },
     "abort": {
-      "already_configured": "Dieses Tuya-Projekt ist bereits eingerichtet."
+      "already_configured": "Dieses Gerät / Tuya-Projekt ist bereits eingerichtet."
     }
   }
 }

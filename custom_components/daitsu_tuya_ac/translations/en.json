@@ -2,8 +2,28 @@
   "config": {
     "step": {
       "user": {
+        "title": "Choose Connection Mode",
+        "description": "Choose between 100% Local LAN control (0 Cloud calls, no quota limits) or Tuya Open Cloud API.",
+        "menu_options": {
+          "local": "Local Wi-Fi (Tuya v3.5 / v3.4 / v3.3 – 0 Cloud calls)",
+          "cloud": "Tuya Open Cloud API (90s interval)"
+        }
+      },
+      "local": {
+        "title": "Local Wi-Fi Connection (Cloud-Free)",
+        "description": "Direct LAN control over TCP port 6668 (works offline with zero Tuya API limits).",
+        "data": {
+          "device_name": "Device Name",
+          "host": "Local IP Address (e.g. 192.168.1.50)",
+          "device_id": "Device ID",
+          "local_key": "Local Key (16 characters)",
+          "protocol_version": "Tuya Protocol Version",
+          "poll_interval": "Polling interval (seconds)"
+        }
+      },
+      "cloud": {
         "title": "Connect Daitsu / TCL Tuya Cloud",
-        "description": "Enter your credentials from the Tuya IoT Development Portal (IoT Core must be active).",
+        "description": "Enter your credentials from the Tuya IoT Development Portal (recommended: >= 90s interval to stay within free quota).",
         "data": {
           "access_id": "Access ID (Client ID)",
           "access_secret": "Access Secret",
@@ -15,11 +35,12 @@
     },
     "error": {
       "cannot_connect": "Failed to connect to Tuya Cloud.",
+      "local_connect_failed": "Local connection failed. Check IP, Device ID, Local Key, and close the Smart Life app (Tuya allows only one active local socket).",
       "invalid_auth": "Invalid credentials or missing IoT Core permission (1004 / 1106).",
       "no_devices": "No devices found in the linked Tuya project."
     },
     "abort": {
-      "already_configured": "This Tuya project is already configured."
+      "already_configured": "This device / Tuya project is already configured."
     }
   }
 }

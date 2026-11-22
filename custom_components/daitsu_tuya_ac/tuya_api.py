@@ -44,6 +44,8 @@ class TuyaCloudApi:
         self._token: str | None = None
         self._token_expires_at: float = 0.0
         self._token_lock = asyncio.Lock()
+        self._working_devices_endpoint: str | None = None
+        self._working_command_prefix: str | None = None
 
     @staticmethod
     def _canonicalize_url(path_with_query: str) -> str:
@@ -182,26 +184,26 @@ class TuyaCloudApi:
         return payload
 
     async def async_get_devices(self) -> list[dict[str, Any]]:
-        """Fetch devices using user endpoint with IoT Core fallbacks."""
+        """Fetch devices using cached working endpoint to minimize Tuya API quota usage."""
         last_err: TuyaApiError | None = None
         raw_devices: list[dict[str, Any]] | None = None
 
-        if self._user_id:
-            try:
-                resp = await self._signed_request(
-                    "GET", f"/v1.0/users/{self._user_id}/devices"
-                )
-                raw_devices = resp.get("result") or []
-            except TuyaApiError as err:
-                last_err = err
-                if err.code not in (1106, 1109, 2406, 28841105):
-                    raise
+        endpoints: list[tuple[str, str]] = []
+        if self._working_devices_endpoint == "user" and self._user_id:
+            endpoints = [("user", f"/v1.0/users/{self._user_id}/devices")]
+        elif self._working_devices_endpoint == "associated":
+            endpoints = [("associated", "/v1.0/iot-01/associated-users/devices?size=50")]
+        elif self._working_devices_endpoint == "v2":
+            endpoints = [("v2", "/v2.0/cloud/thing/device?page_size=20")]
+        else:
+            if self._user_id:
+                endpoints.append(("user", f"/v1.0/users/{self._user_id}/devices"))
+            endpoints.append(("associated", "/v1.0/iot-01/associated-users/devices?size=50"))
+            endpoints.append(("v2", "/v2.0/cloud/thing/device?page_size=20"))
 
-        if raw_devices is None:
+        for key, path in endpoints:
             try:
-                resp = await self._signed_request(
-                    "GET", "/v1.0/iot-01/associated-users/devices?size=50"
-                )
+                resp = await self._signed_request("GET", path)
                 res = resp.get("result")
                 if isinstance(res, dict):
                     raw_devices = res.get("devices") or []
@@ -209,20 +211,15 @@ class TuyaCloudApi:
                     raw_devices = res
                 else:
                     raw_devices = []
+                self._working_devices_endpoint = key
+                break
             except TuyaApiError as err:
-                if last_err is None:
-                    last_err = err
+                last_err = err
                 if err.code not in (1106, 1109, 2406, 28841105):
                     raise
 
         if raw_devices is None:
-            try:
-                resp = await self._signed_request(
-                    "GET", "/v2.0/cloud/thing/device?page_size=20"
-                )
-                raw_devices = resp.get("result") or []
-            except TuyaApiError as err:
-                raise last_err or err
+            raise last_err or TuyaApiError(None, "Geräte konnten nicht geladen werden.")
 
         # Ensure every device has a live status dict
         devices: list[dict[str, Any]] = []
@@ -262,14 +259,22 @@ class TuyaCloudApi:
     async def async_send_command(
         self, device_id: str, code: str, value: Any
     ) -> None:
-        """Send a single DP command to a device."""
+        """Send a single DP command to a device using cached working prefix."""
         body = {"commands": [{"code": code, "value": value}]}
+        if self._working_command_prefix == "iot03":
+            await self._signed_request(
+                "POST", f"/v1.0/iot-03/devices/{device_id}/commands", body
+            )
+            return
+
         try:
             await self._signed_request("POST", f"/v1.0/devices/{device_id}/commands", body)
+            self._working_command_prefix = "v1"
         except TuyaApiError as err:
             if err.code in (1106, 28841105):
                 await self._signed_request(
                     "POST", f"/v1.0/iot-03/devices/{device_id}/commands", body
                 )
+                self._working_command_prefix = "iot03"
             else:
                 raise

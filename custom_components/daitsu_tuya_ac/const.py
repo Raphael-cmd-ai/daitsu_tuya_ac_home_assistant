@@ -6,13 +6,52 @@ from homeassistant.components.climate import HVACMode
 
 DOMAIN = "daitsu_tuya_ac"
 
+CONF_CONNECTION_MODE = "connection_mode"
+MODE_LOCAL = "local"
+MODE_CLOUD = "cloud"
+
 CONF_ACCESS_ID = "access_id"
 CONF_ACCESS_SECRET = "access_secret"
 CONF_REGION = "region"
 CONF_USER_ID = "user_id"
 CONF_POLL_INTERVAL = "poll_interval"
 
-DEFAULT_POLL_INTERVAL = 15
+CONF_DEVICE_NAME = "device_name"
+CONF_HOST = "host"
+CONF_DEVICE_ID = "device_id"
+CONF_LOCAL_KEY = "local_key"
+CONF_PROTOCOL_VERSION = "protocol_version"
+
+DEFAULT_POLL_INTERVAL = 90
+DEFAULT_LOCAL_POLL_INTERVAL = 10
+
+LOCAL_PROTOCOL_VERSIONS: dict[str, str] = {
+    "auto": "Automatisch (3.5 → 3.4 → 3.3)",
+    "3.5": "3.5 (TCWBRCU1 / AES-GCM)",
+    "3.4": "3.4",
+    "3.3": "3.3",
+}
+
+# Standard Daitsu Artic Plus / TCL (TCWBRCU1) local numeric DP ID <-> Cloud DP code mapping
+LOCAL_DP_ID_TO_CODE: dict[str, str] = {
+    "1": "switch",
+    "2": "temp_set",
+    "3": "temp_current",
+    "4": "mode",
+    "5": "fan_speed_enum",
+    "8": "eco",
+    "9": "drying",
+    "11": "light",
+    "12": "beep",
+    "19": "cleaning",
+    "31": "gear_vertical",
+    "34": "gear_horizontal",
+    "102": "eight_add_hot",
+    "112": "ai_eco_switch",
+    "115": "ure",
+    "127": "electricity",
+}
+CODE_TO_LOCAL_DP_ID: dict[str, str] = {v: k for k, v in LOCAL_DP_ID_TO_CODE.items()}
 
 TUYA_REGIONS: dict[str, tuple[str, str]] = {
     "EU": ("Central Europe (EU)", "https://openapi.tuyaeu.com"),

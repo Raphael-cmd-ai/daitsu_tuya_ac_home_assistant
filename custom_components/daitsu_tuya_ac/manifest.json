@@ -4,7 +4,7 @@
   "codeowners": ["@Raphael-cmd-ai"],
   "config_flow": true,
   "documentation": "https://github.com/Raphael-cmd-ai/daitsu_tuya_ac_home_assistant",
-  "iot_class": "cloud_polling",
-  "requirements": [],
-  "version": "1.0.0"
+  "iot_class": "local_polling",
+  "requirements": ["tinytuya>=1.15.1"],
+  "version": "2.0.0"
 }
